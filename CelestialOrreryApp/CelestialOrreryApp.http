@@ -1,0 +1,6 @@
+@CelestialOrreryApp_HostAddress = http://localhost:5075
+
+GET {{CelestialOrreryApp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
