@@ -1,48 +1,62 @@
 using Microsoft.AspNetCore.Mvc;
-using CelestialOrrery.Services;  // Assuming you have a session service
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using CelestialOrrery.Services;  
-
+using CelestialOrrery.Services;
+using CelestialOrrery.Services.Interfaces;
+using CelestialOrrery.Models;
 
 namespace CelestialOrrery.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/game")]
     public class GameController : ControllerBase
     {
-        private readonly IGameSessionService _gameSessionService;
+        private readonly IGameService _gameService;
 
-        public GameController(IGameSessionService gameSessionService)
+        public GameController(IGameService gameService)
         {
-            _gameSessionService = gameSessionService;
+            _gameService = gameService;
         }
 
-        // A simple GET endpoint for Swagger to detect
+        [HttpGet("roundscores")]
+    public async Task<ActionResult<Dictionary<string, double>>> GetRoundScores()
+    {
+        var scores = await _gameService.GetRoundScoresAsync();
+        return Ok(scores);
+    }
+
+        [HttpPost("join")]
+        public async Task<ActionResult<string>> JoinGame([FromBody] string username)
+        {
+            var result = await _gameService.JoinGameAsync(username);
+            return Ok(result);
+        }
+
+        [HttpPost("guess")]
+        public async Task<ActionResult<GameSession>> MakeGuess([FromBody] GuessModel guess)
+        {
+            var session = await _gameService.MakeGuess(guess.Username, guess.UserGuess);
+            return Ok(session);
+        }
+
+        [HttpGet("usernames")]
+        public async Task<ActionResult<IEnumerable<string>>> GetUsernames()
+        {
+            var usernames = await _gameService.GetUsernamesAsync();
+            return Ok(usernames);
+        }
+
         [HttpGet("status")]
-        public IActionResult GetGameStatus()
+        public async Task<ActionResult<string>> GetGameStatus()
         {
-            return Ok(new { status = "Game is running" });
+            var status = await _gameService.GetGameStatusAsync();
+            return Ok(new { status });
         }
+    }
 
-        // A POST endpoint to create a new game session
-        [HttpPost("create")]
-        public IActionResult CreateGame([FromBody] string gameName)
-        {
-            var sessionId = _gameSessionService.CreateGameSession(gameName);
-            return Ok(new { message = $"Game '{gameName}' created successfully.", sessionId });
-        }
-
-        // A GET endpoint to fetch session info by sessionId
-        [HttpGet("session/{sessionId}")]
-        public IActionResult GetSession(string sessionId)
-        {
-            var session = _gameSessionService.GetSessionById(sessionId);
-
-            if (session != null)
-            {
-                return Ok(session);
-            }
-            return NotFound(new { message = "Session not found" });
-        }
+    public class GuessModel
+    {
+        public string Username { get; set; }
+        public string UserGuess { get; set; }
     }
 }

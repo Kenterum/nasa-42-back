@@ -14,7 +14,7 @@ namespace CelestialOrrery.Services
             {
                 SessionId = sessionId,
                 GameName = gameName,
-                Scores = new Dictionary<string, int>()
+                Scores = new Dictionary<string, double>()
             };
             sessions.TryAdd(sessionId, newSession);
             return sessionId;
